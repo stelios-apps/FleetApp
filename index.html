@@ -101,6 +101,16 @@
             body { background: white !important; overflow: auto; }
         }
         #printArea { display: none; }
+
+        @media (max-width: 1023px) {
+            .dashboard-table-wrap {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            .dashboard-table {
+                min-width: 860px;
+            }
+        }
     </style>
 </head>
 <body class="min-h-screen w-screen flex relative overflow-x-hidden" onclick="closeAllActionMenus()">
@@ -113,7 +123,6 @@
         <span id="toastMessage" class="font-medium text-sm">Επιτυχία!</span>
     </div>
 
-    <!-- MODALS -->
     <div id="loginOverlay" class="modal-overlay">
         <div class="panel p-6 sm:p-10 w-full max-w-md flex flex-col gap-6 glow-bottom border-blue-900/30 modal-content">
             <div class="text-center">
@@ -189,10 +198,8 @@
         </div>
     </div>
 
-    <!-- MAIN WRAPPER -->
     <div id="mainDashboard" class="flex w-full min-h-screen p-3 lg:p-4 gap-3 lg:gap-6 opacity-0 pointer-events-none transition-opacity duration-500 z-10">
         
-        <!-- SIDEBAR -->
         <div id="sidebar" class="panel w-72 lg:w-64 flex flex-col py-8 px-4 h-[calc(100dvh-24px)] lg:h-full fixed lg:relative top-3 left-3 z-50 lg:z-auto border-gray-800/50 shrink-0 transform -translate-x-[120%] lg:translate-x-0 transition-transform duration-300">
             <div class="flex items-center gap-3 mb-10 px-4">
                 <img src="icon.png" alt="Fleet Hub Logo" class="w-9 h-9 rounded-lg object-contain shadow-[0_0_10px_rgba(37,99,235,0.25)]">
@@ -225,10 +232,8 @@
             </div>
         </div>
 
-        <!-- CONTENT AREA -->
         <div class="flex-1 flex flex-col min-h-screen overflow-hidden gap-3 lg:gap-6 min-w-0 z-20 w-full lg:pl-0">
             
-            <!-- TOP BAR -->
             <div class="panel px-3 lg:px-6 py-3 lg:py-4 border-blue-900/20 flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-3 bg-gray-900/30 shrink-0">
                 <div class="flex items-center gap-3 lg:gap-6 w-full lg:w-2/3">
                     <button id="mobileMenuBtn" class="lg:hidden bg-gray-900 border border-gray-700 text-white p-3 rounded-lg shrink-0">
@@ -251,7 +256,6 @@
                 </button>
             </div>
 
-            <!-- VIEW 1: DASHBOARD -->
             <div id="view-dashboard" class="flex-1 flex flex-col gap-3 lg:gap-6 overflow-hidden">
                 <div class="grid grid-cols-1 md:grid-cols-12 gap-3 lg:gap-6 shrink-0">
                     <div class="md:col-span-4 panel p-4 lg:p-6 glow-bottom flex flex-col justify-center border-blue-900/20 relative">
@@ -285,26 +289,27 @@
                             </button>
                         </div>
                     </div>
-                    <div class="flex-1 overflow-y-auto z-20 relative">
-                        <table class="w-full text-left border-collapse relative">
-                            <thead class="bg-[#0b0f19] sticky top-0 z-40">
-                                <tr class="text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-800/50">
-                                    <th class="py-4 pl-4 lg:pl-6 w-2/5">Συνεργείο & Αντικείμενο</th>
-                                    <th class="py-4 text-right pr-4 lg:pr-6">Συμφωνία</th>
-                                    <th class="py-4 text-right pr-4 lg:pr-6">Πληρωμένα</th>
-                                    <th class="py-4 text-right pr-4 lg:pr-6 w-1/4">Τρέχον Υπόλοιπο</th>
-                                    <th class="py-4 w-10"></th>
-                                </tr>
-                            </thead>
-                            <tbody class="text-sm divide-y divide-gray-800/30" id="transactionsBody">
-                                <tr><td colspan="5" class="text-center py-10 text-gray-500">Επιλέξτε πλοίο για να δείτε τα δεδομένα.</td></tr>
-                            </tbody>
-                        </table>
+                    <div class="flex-1 overflow-hidden dashboard-table-wrap">
+                        <div class="h-full overflow-y-auto z-20 relative">
+                            <table class="w-full text-left border-collapse relative dashboard-table">
+                                <thead class="bg-[#0b0f19] sticky top-0 z-40">
+                                    <tr class="text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-800/50">
+                                        <th class="py-4 pl-4 lg:pl-6 w-2/5">Συνεργείο & Αντικείμενο</th>
+                                        <th class="py-4 text-right pr-4 lg:pr-6">Συμφωνία</th>
+                                        <th class="py-4 text-right pr-4 lg:pr-6">Πληρωμένα</th>
+                                        <th class="py-4 text-right pr-4 lg:pr-6 w-1/4">Τρέχον Υπόλοιπο</th>
+                                        <th class="py-4 w-10"></th>
+                                    </tr>
+                                </thead>
+                                <tbody class="text-sm divide-y divide-gray-800/30" id="transactionsBody">
+                                    <tr><td colspan="5" class="text-center py-10 text-gray-500">Επιλέξτε πλοίο για να δείτε τα δεδομένα.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- VIEW 2: CONTRACTORS DETAILS -->
             <div id="view-contractors" class="hidden flex-1 flex-col xl:flex-row gap-3 lg:gap-6 overflow-hidden">
                 <div class="panel w-full xl:w-1/3 flex flex-col border-gray-800/50 h-[260px] xl:h-full overflow-hidden shrink-0">
                     <div class="p-5 border-b border-gray-800/50 shrink-0 bg-gray-900/20 flex justify-between items-center">
@@ -410,7 +415,6 @@
         let currentTab = 'dashboard';
 
         const shipSelector = document.getElementById('shipSelector');
-
         const mobileMenuBtn = document.getElementById('mobileMenuBtn');
         const sidebar = document.getElementById('sidebar');
         const sidebarOverlay = document.getElementById('sidebarOverlay');
@@ -460,12 +464,12 @@
             const nCont = document.getElementById('nav-contractors');
 
             if(tabName === 'dashboard') {
-                vDash.classList.remove('hidden'); 
+                vDash.classList.remove('hidden');
                 vCont.classList.add('hidden');
                 nDash.className = "sidebar-active flex items-center gap-3 px-4 py-3 rounded-xl transition-all w-full text-left";
                 nCont.className = "sidebar-inactive flex items-center gap-3 px-4 py-3 rounded-xl transition-all w-full text-left";
             } else {
-                vDash.classList.add('hidden'); 
+                vDash.classList.add('hidden');
                 vCont.classList.remove('hidden');
                 nCont.className = "sidebar-active flex items-center gap-3 px-4 py-3 rounded-xl transition-all w-full text-left";
                 nDash.className = "sidebar-inactive flex items-center gap-3 px-4 py-3 rounded-xl transition-all w-full text-left";
@@ -544,13 +548,13 @@
                 elType.value = p.type;
                 elNotes.value = p.notes || "";
                 elDate.value = p.date || "";
-                elDate.classList.remove('hidden'); 
+                elDate.classList.remove('hidden');
                 title.innerText = "Επεξεργασία Πληρωμής";
                 desc.innerText = "Διορθώστε τα στοιχεία της επιλεγμένης πληρωμής.";
             } else {
                 elId.value = "";
                 elAmount.value = ""; elType.value = "Τράπεζα"; elNotes.value = ""; elDate.value = "";
-                elDate.classList.add('hidden'); 
+                elDate.classList.add('hidden');
                 if(presetContractorId) select.value = presetContractorId;
                 title.innerText = "Καταχώρηση Πληρωμής";
                 desc.innerText = "Νέα οικονομική κίνηση στο επιλεγμένο πλοίο.";
@@ -575,7 +579,7 @@
 
         window.handleBackdropClick = function(event, modalPrefix) {
             if (event.target.id === modalPrefix + 'Overlay') closeModals();
-        }
+        };
 
         window.closeModals = function() {
             const modals = ['shipModal', 'contractorModal', 'paymentModal'];
@@ -601,12 +605,16 @@
         const formatEur = (num) => new Intl.NumberFormat('el-GR', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2 }).format(num);
 
         window.rowClick = function(cId, isMenuClick = false) {
-            if(isMenuClick) return; 
+            if(isMenuClick) return;
             selectedContractorId = cId;
             if(currentTab !== 'contractors') {
                 switchTab('contractors');
+                setTimeout(() => {
+                    renderContractorsList();
+                    updateDetailView();
+                }, 0);
             } else {
-                renderContractorsList(); 
+                renderContractorsList();
                 updateDetailView();
             }
         };
@@ -645,7 +653,7 @@
                 tbody.innerHTML = '<tr><td colspan="5" class="text-center py-6 text-gray-500 text-xs font-medium">Δεν υπάρχουν πληρωμές.</td></tr>';
             } else {
                 cPayments.forEach(p => {
-                    const badge = p.type === 'Τράπεζα' 
+                    const badge = p.type === 'Τράπεζα'
                         ? '<span class="px-2 py-0.5 text-[10px] rounded border text-sky-400 bg-sky-950/30 border-sky-900 whitespace-nowrap">Τράπεζα</span>'
                         : '<span class="px-2 py-0.5 text-[10px] rounded border text-emerald-400 bg-emerald-950/30 border-emerald-900 whitespace-nowrap">Μετρητά</span>';
                     
@@ -778,8 +786,10 @@
                     document.getElementById('loginOverlay').style.display = 'none';
                     document.getElementById('mainDashboard').classList.remove('opacity-0', 'pointer-events-none');
                 }, 500);
+
                 document.getElementById('userDisplayName').innerText = user.email;
                 document.getElementById('userRole').innerText = isAdmin ? "Administrator" : "Manager";
+                document.getElementById('userRole').classList.remove('text-blue-400', 'text-gray-500');
                 document.getElementById('userRole').classList.add(isAdmin ? 'text-blue-400' : 'text-gray-500');
                 document.getElementById('userAvatar').innerText = user.email.split('@')[0].substring(0, 2).toUpperCase();
                 
@@ -799,29 +809,36 @@
             signInWithEmailAndPassword(auth, document.getElementById('emailInput').value, document.getElementById('passwordInput').value)
                 .catch(() => document.getElementById('errorMessage').classList.remove('hidden'));
         });
+
         document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
 
         async function loadShips(autoSelectId = null) {
             let q;
-            if(isAdmin) q = collection(db, "ships");
-            else q = query(collection(db, "ships"), where("userId", "==", currentUser.uid));
+            if(isAdmin) {
+                q = collection(db, "ships");
+            } else {
+                q = query(collection(db, "ships"), where("userId", "==", currentUser.uid));
+            }
             
             const snaps = await getDocs(q);
             shipSelector.innerHTML = '<option value="">Επιλέξτε Πλοίο...</option>';
             snaps.forEach(docSnap => {
                 const opt = document.createElement('option');
-                opt.value = docSnap.id; 
+                opt.value = docSnap.id;
                 opt.text = docSnap.data().name + (isAdmin && docSnap.data().creatorEmail ? ` (${docSnap.data().creatorEmail.split('@')[0]})` : '');
                 shipSelector.appendChild(opt);
             });
+
             if(autoSelectId) {
                 shipSelector.value = autoSelectId;
                 refreshDashboard();
+            } else {
+                resetUI();
             }
         }
 
         shipSelector.addEventListener('change', () => {
-            selectedContractorId = null; 
+            selectedContractorId = null;
             refreshDashboard();
         });
 
@@ -832,7 +849,7 @@
             const cSnap = await getDocs(query(collection(db, "contractors"), where("shipId", "==", sid)));
             globalContractors = [];
             let totalOffer = 0;
-            cSnap.forEach(d => { 
+            cSnap.forEach(d => {
                 const data = d.data();
                 globalContractors.push({id: d.id, ...data});
                 totalOffer += parseFloat(data.offer || 0);
@@ -870,7 +887,8 @@
                     let pWidth = 0;
                     if(offer > 0) pWidth = Math.min(100, Math.max(0, (cTotalPaid / offer) * 100));
                     
-                    let balColorClass = "text-amber-400"; let pBgColor = "bg-amber-400";
+                    let balColorClass = "text-amber-400"; 
+                    let pBgColor = "bg-amber-400";
                     if(balance < 0) { balColorClass = "text-rose-400"; pBgColor = "bg-rose-400"; }
                     else if(balance === 0) { balColorClass = "text-emerald-400"; pBgColor = "bg-emerald-400"; }
 
@@ -887,11 +905,17 @@
                                     </div>
                                 </div>
                             </td>
-                            <td class="py-5 text-right pr-4 lg:pr-6"><p class="text-gray-300 font-medium whitespace-nowrap">${formatEur(offer)}</p></td>
-                            <td class="py-5 text-right pr-4 lg:pr-6"><p class="text-white font-medium whitespace-nowrap">${formatEur(cTotalPaid)}</p></td>
-                            <td class="py-5 text-right pr-4 lg:pr-6 relative">
+                            <td class="py-5 text-right pr-4 lg:pr-6">
+                                <p class="text-gray-300 font-medium whitespace-nowrap">${formatEur(offer)}</p>
+                            </td>
+                            <td class="py-5 text-right pr-4 lg:pr-6">
+                                <p class="text-white font-medium whitespace-nowrap">${formatEur(cTotalPaid)}</p>
+                            </td>
+                            <td class="py-5 text-right pr-4 lg:pr-6 relative min-w-[160px]">
                                 <p class="font-bold ${balColorClass} text-lg whitespace-nowrap tracking-tight z-10 relative">${formatEur(balance)}</p>
-                                <div class="progress-bg w-full"><div class="progress-fill ${pBgColor}" style="width: ${pWidth}%"></div></div>
+                                <div class="progress-bg w-full">
+                                    <div class="progress-fill ${pBgColor}" style="width: ${pWidth}%"></div>
+                                </div>
                             </td>
                             <td class="py-5 pr-4 lg:pr-6 relative" onclick="event.stopPropagation()">
                                 <button onclick="toggleActionMenu(event, 'dash-${c.id}')" class="text-gray-500 hover:text-white p-2 rounded transition-colors opacity-0 group-hover:opacity-100">
@@ -909,15 +933,20 @@
 
             renderContractorsList();
             
-            if(selectedContractorId && currentTab === 'contractors') {
+            if(selectedContractorId) {
                 const stillExists = globalContractors.find(c => c.id === selectedContractorId);
-                if(stillExists) updateDetailView();
-                else {
+                if(stillExists) {
+                    updateDetailView();
+                } else {
                     selectedContractorId = null;
                     document.getElementById('contractorEmptyState').classList.remove('hidden');
                     document.getElementById('contractorDetails').classList.add('hidden');
                     document.getElementById('contractorDetails').classList.remove('flex');
                 }
+            } else {
+                document.getElementById('contractorEmptyState').classList.remove('hidden');
+                document.getElementById('contractorDetails').classList.add('hidden');
+                document.getElementById('contractorDetails').classList.remove('flex');
             }
         }
 
@@ -926,7 +955,8 @@
             document.getElementById('uiTotalCash').innerText = '€ 0.00';
             document.getElementById('uiTotalBank').innerText = '€ 0.00';
             document.getElementById('transactionsBody').innerHTML = '<tr><td colspan="5" class="text-center py-10 text-gray-500">Επιλέξτε πλοίο για να δείτε τα δεδομένα.</td></tr>';
-            globalContractors = []; globalPayments = [];
+            globalContractors = [];
+            globalPayments = [];
             renderContractorsList();
             document.getElementById('contractorEmptyState').classList.remove('hidden');
             document.getElementById('contractorDetails').classList.add('hidden');
@@ -940,9 +970,10 @@
                 name, 
                 userId: currentUser.uid, 
                 creatorEmail: currentUser.email,
-                timestamp: Date.now() 
+                timestamp: Date.now()
             });
-            window.closeModals(); window.showToast("Το πλοίο δημιουργήθηκε!");
+            window.closeModals();
+            window.showToast("Το πλοίο δημιουργήθηκε!");
             loadShips(ref.id);
         });
 
@@ -951,14 +982,16 @@
             const name = document.getElementById('newContractorName').value.trim();
             const job = document.getElementById('newContractorJob').value.trim();
             const offer = parseFloat(document.getElementById('newContractorOffer').value);
-            if(!name || !offer) { alert("Συμπληρώστε όνομα και ποσό."); return; }
+            if(!name || isNaN(offer)) { alert("Συμπληρώστε όνομα και ποσό."); return; }
             
             if(id) {
                 await updateDoc(doc(db, "contractors", id), { name, job, offer });
-                window.closeModals(); window.showToast("Το συνεργείο ενημερώθηκε!");
+                window.closeModals();
+                window.showToast("Το συνεργείο ενημερώθηκε!");
             } else {
                 const ref = await addDoc(collection(db, "contractors"), { shipId: shipSelector.value, name, job, offer, timestamp: Date.now() });
-                window.closeModals(); window.showToast("Το συνεργείο καταχωρήθηκε!");
+                window.closeModals();
+                window.showToast("Το συνεργείο καταχωρήθηκε!");
                 selectedContractorId = ref.id;
             }
             await refreshDashboard();
@@ -972,7 +1005,7 @@
             const notes = document.getElementById('paymentNotes').value.trim();
             let dateStr = document.getElementById('paymentDate').value.trim();
             
-            if(!contractorId || !amount) { alert("Συμπληρώστε συνεργείο και ποσό."); return; }
+            if(!contractorId || isNaN(amount)) { alert("Συμπληρώστε συνεργείο και ποσό."); return; }
             
             if(!dateStr) {
                 const today = new Date();
@@ -981,10 +1014,12 @@
 
             if(id) {
                 await updateDoc(doc(db, "payments", id), { contractorId, amount, type, notes, date: dateStr });
-                window.closeModals(); window.showToast("Η πληρωμή ενημερώθηκε!");
+                window.closeModals();
+                window.showToast("Η πληρωμή ενημερώθηκε!");
             } else {
                 await addDoc(collection(db, "payments"), { shipId: shipSelector.value, contractorId, amount, type, notes, date: dateStr, timestamp: Date.now() });
-                window.closeModals(); window.showToast("Η πληρωμή εγκρίθηκε!");
+                window.closeModals();
+                window.showToast("Η πληρωμή εγκρίθηκε!");
             }
             await refreshDashboard();
         });
@@ -993,7 +1028,9 @@
             if(confirm("Είστε σίγουροι ότι θέλετε να διαγράψετε αυτό το συνεργείο; ΘΑ ΔΙΑΓΡΑΦΟΥΝ ΚΑΙ ΟΛΕΣ ΟΙ ΠΛΗΡΩΜΕΣ ΤΟΥ!")) {
                 await deleteDoc(doc(db, "contractors", id));
                 const pToDel = globalPayments.filter(p => p.contractorId === id);
-                for(let p of pToDel) { await deleteDoc(doc(db, "payments", p.id)); }
+                for(let p of pToDel) {
+                    await deleteDoc(doc(db, "payments", p.id));
+                }
                 
                 if(selectedContractorId === id) selectedContractorId = null;
                 window.showToast("Το συνεργείο διαγράφηκε.");
@@ -1009,6 +1046,7 @@
             }
         };
     </script>
+
     <script>
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('sw.js');
