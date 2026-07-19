@@ -1,7 +1,6 @@
-const CACHE_NAME = "fleet-app-v4";
-const APP_SHELL = [
+const CACHE_NAME = "fleet-app-v5";
+const STATIC_ASSETS = [
   "./",
-  "./index.html",
   "./manifest.json",
   "./icon.png",
   "./icon-192.png",
@@ -12,19 +11,9 @@ self.addEventListener("install", (event) => {
   event.waitUntil(
     (async () => {
       const cache = await caches.open(CACHE_NAME);
-
-      for (const url of APP_SHELL) {
-        const request = new Request(url, { cache: "reload" });
-        try {
-          const response = await fetch(request);
-          if (response && response.ok) {
-            await cache.put(url, response.clone());
-          }
-        } catch (err) {}
-      }
+      await cache.addAll(STATIC_ASSETS);
     })()
   );
-
   self.skipWaiting();
 });
 
@@ -33,11 +22,9 @@ self.addEventListener("activate", (event) => {
     (async () => {
       const keys = await caches.keys();
       await Promise.all(
-        keys.map((key) => {
-          if (key !== CACHE_NAME) {
-            return caches.delete(key);
-          }
-        })
+        keys
+          .filter((key) => key !== CACHE_NAME)
+          .map((key) => caches.delete(key))
       );
       await self.clients.claim();
     })()
@@ -51,24 +38,24 @@ self.addEventListener("fetch", (event) => {
 
   const url = new URL(req.url);
 
+  if (url.origin !== self.location.origin) return;
+
   if (req.mode === "navigate") {
     event.respondWith(
       (async () => {
         try {
-          const fresh = await fetch(req);
-          const cache = await caches.open(CACHE_NAME);
-          await cache.put("./index.html", fresh.clone());
+          const fresh = await fetch(req, { cache: "no-store" });
           return fresh;
         } catch (err) {
-          const cached = await caches.match("./index.html");
-          return cached || Response.error();
+          const cachedIndex = await caches.match("./index.html");
+          const cachedRoot = await caches.match("./");
+          return cachedIndex || cachedRoot || new Response("Offline", {
+            status: 503,
+            statusText: "Offline"
+          });
         }
       })()
     );
-    return;
-  }
-
-  if (url.origin !== self.location.origin) {
     return;
   }
 
