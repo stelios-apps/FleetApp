@@ -125,7 +125,9 @@
     <div id="loginOverlay" class="modal-overlay">
         <div class="panel p-8 md:p-10 w-full max-w-md flex flex-col gap-6 glow-bottom modal-content bg-white dark:bg-[#0b0f19]">
             <div class="text-center">
-                <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-900 mx-auto flex items-center justify-center font-bold text-white mb-4 text-3xl shadow-[0_0_20px_rgba(37,99,235,0.4)]">F</div>
+                <div class="w-16 h-16 rounded-2xl mx-auto flex items-center justify-center overflow-hidden mb-4 shadow-[0_20px_40px_-15px_rgba(37,99,235,0.4)]">
+                 <img src="icon.png" alt="Logo" class="w-full h-full object-cover">
+                  </div>
                 <h2 class="text-2xl font-bold tracking-tight">Σύνδεση</h2>
                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">Εισάγετε τον κωδικό πρόσβασης</p>
             </div>
@@ -147,15 +149,17 @@
     <div id="shipModalOverlay" class="modal-overlay opacity-0 invisible" onclick="handleBackdropClick(event, 'shipModal')">
         <div class="panel p-6 md:p-8 w-full max-w-md flex flex-col gap-5 shadow-2xl modal-content scale-95 opacity-0" id="shipModalContent">
             <div>
-                <h3 class="text-xl font-bold">Νέο Πλοίο</h3>
-                <p class="text-xs text-gray-500 mt-1">Καταχωρήστε τα στοιχεία του νέου έργου.</p>
+                <h3 id="shipModalTitle" class="text-xl font-bold">Νέο Πλοίο</h3>
+                <p id="shipModalDesc" class="text-xs text-gray-500 mt-1">Καταχωρήστε τα στοιχεία του νέου έργου.</p>
             </div>
+            <input type="hidden" id="editShipId" value="">
             <input type="text" id="newShipCompany" class="w-full border rounded-lg px-4 py-3 focus:outline-none focus:border-blue-500" placeholder="Εταιρεία (π.χ. Seaways)">
             <input type="text" id="newShipName" class="w-full border rounded-lg px-4 py-3 focus:outline-none focus:border-blue-500" placeholder="Όνομα Πλοίου">
             <div class="flex gap-3 mt-2">
                 <button onclick="closeModals()" class="flex-1 border border-gray-300 dark:border-gray-700 py-3 rounded-lg text-sm font-medium">Ακύρωση</button>
                 <button id="saveShipBtn" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-medium py-3 rounded-lg text-sm">Αποθήκευση</button>
             </div>
+            <button id="deleteShipBtn" onclick="deleteShip()" class="hidden text-rose-500 hover:text-rose-600 text-xs font-medium text-center py-1 mt-2">Διαγραφή Πλοίου</button>
         </div>
     </div>
 
@@ -164,7 +168,7 @@
         <div class="panel p-6 md:p-8 w-full max-w-md flex flex-col gap-5 shadow-2xl modal-content scale-95 opacity-0" id="contractorModalContent">
             <div>
                 <h3 id="contractorModalTitle" class="text-xl font-bold">Προσθήκη Συνεργείου</h3>
-                <p id="contractorModalDesc" class="text-xs text-gray-500 mt-1">Δημιουργήστε νέα καρτέλα εργολάβου.</p>
+                <p id="contractorModalDesc" class="text-xs text-gray-500 mt-1">Δημιουργήστε νέα καρτέλα συνεργείου.</p>
             </div>
             <input type="hidden" id="editContractorId" value="">
             <div class="flex flex-col gap-3">
@@ -240,8 +244,10 @@
         <!-- SIDEBAR -->
         <div id="sidebar" class="panel w-64 md:w-64 flex flex-col py-8 px-4 h-[calc(100%-1rem)] md:h-full absolute md:relative z-50 -translate-x-[120%] md:translate-x-0 transition-transform duration-300 shrink-0 shadow-2xl md:shadow-none left-2 md:left-0 top-2 md:top-0">
             <div class="flex items-center gap-3 mb-10 px-4">
-                <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-blue-900 flex items-center justify-center font-bold text-white shadow-md shrink-0">F</div>
-                <h2 class="text-lg font-semibold tracking-wide truncate">Fleet Hub</h2>
+                <div class="w-8 h-8 rounded-xl overflow-hidden shrink-0 shadow-md">
+                 <img src="icon.png" alt="Logo" class="w-full h-full object-cover">
+                 </div>
+                <h2 class="text-lg font-semibold tracking-wide truncate">Fleet App</h2>
             </div>
             
             <nav class="flex flex-col gap-2 flex-1">
@@ -296,10 +302,15 @@
                         </div>
                     </div>
                 </div>
-                <button onclick="openModal('shipModalOverlay', 'shipModalContent', 'newShipCompany')" class="shrink-0 bg-blue-600/10 text-blue-600 dark:text-blue-400 hover:bg-blue-600/20 border border-blue-500/30 font-medium px-3 md:px-4 py-2 md:py-2.5 rounded-lg text-sm flex items-center gap-1 md:gap-2 transition-colors">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg> 
-                    <span class="hidden md:inline">Νέο Πλοίο</span><span class="md:hidden">Πλοίο</span>
-                </button>
+                <div class="flex gap-2 shrink-0">
+                    <button onclick="openEditShipModal()" title="Επεξεργασία Πλοίου" class="shrink-0 bg-gray-500/10 text-gray-500 dark:text-gray-400 hover:bg-gray-500/20 border border-gray-500/30 font-medium px-3 md:px-3 py-2 md:py-2.5 rounded-lg text-sm flex items-center gap-1 transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                    </button>
+                    <button onclick="openNewShipModal()" class="shrink-0 bg-blue-600/10 text-blue-600 dark:text-blue-400 hover:bg-blue-600/20 border border-blue-500/30 font-medium px-3 md:px-4 py-2 md:py-2.5 rounded-lg text-sm flex items-center gap-1 md:gap-2 transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg> 
+                        <span class="hidden md:inline">Νέο Πλοίο</span><span class="md:hidden">Πλοίο</span>
+                    </button>
+                </div>
             </div>
 
             <!-- VIEW 1: DASHBOARD -->
@@ -616,6 +627,63 @@
             }
         };
 
+        
+        window.openNewShipModal = function() {
+            document.getElementById('editShipId').value = '';
+            document.getElementById('newShipCompany').value = '';
+            document.getElementById('newShipName').value = '';
+            document.getElementById('shipModalTitle').innerText = 'Νέο Πλοίο';
+            document.getElementById('shipModalDesc').innerText = 'Καταχωρήστε τα στοιχεία του νέου έργου.';
+            document.getElementById('deleteShipBtn').classList.add('hidden');
+            openModal('shipModalOverlay', 'shipModalContent', 'newShipCompany');
+        };
+
+        window.openEditShipModal = function() {
+            if(!shipSelector.value) { alert("Επιλέξτε πρώτα πλοίο για επεξεργασία."); return; }
+            const ship = globalShips.find(s => s.id === shipSelector.value);
+            if(!ship) return;
+            document.getElementById('editShipId').value = ship.id;
+            document.getElementById('newShipCompany').value = ship.company || '';
+            document.getElementById('newShipName').value = ship.name || '';
+            document.getElementById('shipModalTitle').innerText = 'Επεξεργασία Πλοίου';
+            document.getElementById('shipModalDesc').innerText = 'Τροποποιήστε τα στοιχεία εταιρείας / πλοίου.';
+            document.getElementById('deleteShipBtn').classList.remove('hidden');
+            openModal('shipModalOverlay', 'shipModalContent', 'newShipCompany');
+        };
+
+        window.deleteShip = async function() {
+            const id = document.getElementById('editShipId').value;
+            if(!id) return;
+            const msg = "ΠΡΟΣΟΧΗ: Αυτό το πλοίο έχει ενδεχομένως συνεργεία και έξοδα καταχωρημένα. Η διαγραφή θα αφαιρέσει ΟΛΑ τα δεδομένα (συνεργεία, πληρωμές). Είστε σίγουροι;";
+            if(!confirm(msg)) return;
+
+            const btn = document.getElementById('deleteShipBtn');
+            btn.disabled = true; btn.innerText = "Διαγραφή...";
+
+            try {
+                const cSnap = await getDocs(query(collection(db, "contractors"), where("shipId", "==", id)));
+                for(const d of cSnap.docs) {
+                    const pSnap = await getDocs(query(collection(db, "payments"), where("contractorId", "==", d.id)));
+                    for(const p of pSnap.docs) await deleteDoc(doc(db, "payments", p.id));
+                    await deleteDoc(doc(db, "contractors", d.id));
+                }
+                await deleteDoc(doc(db, "ships", id));
+                window.closeModals();
+                window.showToast("Το πλοίο διαγράφηκε.");
+                selectedContractorId = null;
+                await loadShips();
+                // We don't have resetUI defined in your code snippet provided previously, 
+                // but let's clear the selector value and refresh
+                shipSelector.value = '';
+                refreshDashboard();
+            } catch(err) {
+                console.error(err);
+                alert("Σφάλμα κατά τη διαγραφή.");
+            } finally {
+                btn.disabled = false; btn.innerText = "Διαγραφή Πλοίου";
+            }
+        };
+
         window.openModal = function(overlayId, contentId, focusId) {
             if(!shipSelector.value && overlayId !== 'shipModalOverlay') {
                 alert("Πρέπει πρώτα να επιλέξετε ή να δημιουργήσετε πλοίο!"); return;
@@ -648,7 +716,7 @@
                 title.innerText = "Επεξεργασία"; desc.innerText = "Τροποποίηση στοιχείων.";
             } else {
                 elId.value = ""; elName.value = ""; elJob.value = ""; elOffer.value = ""; elNotes.value = ""; elOffer.disabled = false;
-                title.innerText = "Προσθήκη Συνεργείου"; desc.innerText = "Δημιουργήστε νέα καρτέλα εργολάβου.";
+                title.innerText = "Προσθήκη Συνεργείου"; desc.innerText = "Δημιουργήστε νέα καρτέλα συνεργείου.";
             }
             openModal('contractorModalOverlay', 'contractorModalContent', 'newContractorName');
         };
@@ -858,7 +926,7 @@
                 <!DOCTYPE html>
                 <html>
                 <head>
-                    <title>Εκτύπωση</title>
+                    <title> </title>
                     <style>
                         body { font-family: Arial, sans-serif; color: #000; background: #fff; padding: 20px; font-size: 14px; -webkit-print-color-adjust: exact;}
                         table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; table-layout: fixed; }
@@ -899,7 +967,7 @@
 
             const html = `
                 <div style="max-width: 800px; margin: 0 auto; color: #000;">
-                    <h1 style="font-size: 24px; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 20px; text-align: center;">ΚΑΡΤΕΛΑ ΣΥΝΕΡΓΕΙΟΥ</h1>
+                    <h1 style="font-size: 24px; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 20px; text-align: center;">ΚΑΡΤΕΛΑ ΣΥΝΕΡΓΕΙΟΥ/ΠΡΟΜΗΘΕΥΤΗ</h1>
                     <div style="margin-bottom: 20px;">
                         <p style="margin-bottom: 5px;"><strong>ΕΤΑΙΡΕΙΑ:</strong> ${shipCompany}</p>
                         <p style="margin-bottom: 5px;"><strong>ΠΛΟΙΟ:</strong> ${shipName}</p>
@@ -960,7 +1028,7 @@
                         </div>
                     </div>
                     
-                    <p style="font-size: 15px; margin-bottom: 10px;">Έγινε καταβολή προς το συνεργείο / παραστατικό:</p>
+                    <p style="font-size: 15px; margin-bottom: 10px;">Έγινε καταβολή προς το συνεργείο / προμηθευτή:</p>
                     <p style="font-size: 18px; margin-bottom: 20px;"><strong>${c.name}</strong> <span style="font-size:14px; color:#555;">(${c.job})</span></p>
                     
                     <div style="margin: 30px 0; padding: 20px; background: #f9f9f9; border: 1px solid #ccc;">
@@ -1235,14 +1303,35 @@
         }
 
         document.getElementById('saveShipBtn').addEventListener('click', async () => {
+            const id = document.getElementById('editShipId').value;
             const name = document.getElementById('newShipName').value.trim();
             const company = document.getElementById('newShipCompany').value.trim();
             if(!name) return;
-            const ref = await addDoc(collection(db, "ships"), { 
-                name, company, userId: currentUser.uid, creatorEmail: currentUser.email, timestamp: Date.now() 
-            });
-            window.closeModals(); window.showToast("Το πλοίο δημιουργήθηκε!");
-            loadShips(ref.id);
+
+            document.getElementById('saveShipBtn').innerText = 'Αποθήκευση...';
+            document.getElementById('saveShipBtn').disabled = true;
+
+            try {
+                if (id) {
+                    await updateDoc(doc(db, "ships", id), { name, company });
+                    window.closeModals();
+                    window.showToast("Το πλοίο ενημερώθηκε.");
+                    await loadShips(id);
+                } else {
+                    const ref = await addDoc(collection(db, "ships"), { 
+                        name, company, userId: currentUser.uid, creatorEmail: currentUser.email, timestamp: Date.now() 
+                    });
+                    window.closeModals();
+                    window.showToast("Το πλοίο δημιουργήθηκε.");
+                    await loadShips(ref.id);
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Σφάλμα κατά την αποθήκευση.");
+            } finally {
+                document.getElementById('saveShipBtn').innerText = 'Αποθήκευση';
+                document.getElementById('saveShipBtn').disabled = false;
+            }
         });
 
         document.getElementById('saveContractorBtn').addEventListener('click', async () => {
