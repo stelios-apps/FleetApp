@@ -23,7 +23,7 @@
         body.light-theme .panel { background: #ffffff; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
         body.light-theme input, body.light-theme select, body.light-theme textarea { background: #ffffff !important; border-color: #cbd5e1 !important; color: #0f172a !important; }
         body.light-theme input::placeholder, body.light-theme textarea::placeholder { color: #94a3b8 !important; }
-        body.light-theme .text-white:not(button):not(svg) { color: #0f172a !important; }
+        body.light-theme .text-white:not(button):not(svg):not(.text-white-force) { color: #0f172a !important; }
         body.light-theme .text-gray-400, body.light-theme .text-gray-500 { color: #64748b !important; }
         body.light-theme .text-gray-300, body.light-theme .text-gray-200 { color: #334155 !important; }
         body.light-theme .bg-gray-900, body.light-theme .bg-gray-800 { background: #ffffff !important; border-color: #e2e8f0 !important; }
@@ -36,7 +36,7 @@
         
         /* Εξαιρέσεις Light Theme (Κουμπιά & Ποσά) */
         body.light-theme .bg-blue-600 { background-color: #2563eb !important; color: #ffffff !important; }
-        body.light-theme .bg-blue-600 .text-white, body.light-theme .bg-emerald-600 .text-white, body.light-theme button.text-white { color: #ffffff !important; }
+        body.light-theme .bg-blue-600 .text-white, body.light-theme .bg-emerald-600 .text-white, body.light-theme button.text-white, body.light-theme .bg-emerald-500.text-white { color: #ffffff !important; }
         body.light-theme .text-rose-500, body.light-theme .text-rose-400 { color: #e11d48 !important; }
         body.light-theme .text-emerald-600, body.light-theme .text-emerald-400 { color: #059669 !important; }
         body.light-theme .text-amber-500, body.light-theme .text-amber-400 { color: #d97706 !important; }
@@ -83,9 +83,9 @@
         .action-item:last-child { border-bottom: none; }
         .action-item:hover { background: #4b5563; }
 
-        body:not(.light-theme) input,
-        body:not(.light-theme) select,
-        body:not(.light-theme) textarea {
+        body:not(.light-theme) input:not([readonly]),
+        body:not(.light-theme) select:not([readonly]),
+        body:not(.light-theme) textarea:not([readonly]) {
           background-color: rgba(255, 255, 255, 0.05) !important;
           border-color: rgba(255, 255, 255, 0.1) !important;
           color: #ffffff !important;
@@ -96,9 +96,9 @@
           color: #6b7280 !important;
         }
         
-        body:not(.light-theme) input:focus,
-        body:not(.light-theme) select:focus,
-        body:not(.light-theme) textarea:focus {
+        body:not(.light-theme) input:not([readonly]):focus,
+        body:not(.light-theme) select:not([readonly]):focus,
+        body:not(.light-theme) textarea:not([readonly]):focus {
           border-color: #3b82f6 !important;
           background-color: rgba(255, 255, 255, 0.08) !important;
         }
@@ -133,7 +133,6 @@
             </div>
             <div class="flex flex-col gap-4 relative">
                 <div class="relative w-full">
-                    <!-- Αλλαγή type=password για να δέχεται τα πάντα και μάτι για εμφάνιση -->
                     <input type="password" id="pinInput" class="w-full border rounded-lg pl-4 pr-12 py-4 text-center text-xl tracking-widest focus:outline-none focus:border-blue-500" placeholder="Κωδικός">
                     <button type="button" id="togglePasswordBtn" class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-blue-500 p-1">
                         <svg id="eyeIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
@@ -142,6 +141,35 @@
                 <p id="errorMessage" class="text-rose-500 text-xs font-medium text-center hidden">Λάθος κωδικός.</p>
                 <button id="loginBtn" class="bg-blue-600 hover:bg-blue-500 text-white font-medium py-3 rounded-xl transition-all shadow-[0_0_20px_rgba(37,99,235,0.3)]">Είσοδος</button>
             </div>
+        </div>
+    </div>
+
+    <!-- BREAKDOWN MODAL (Ανάλυση Πληρωμών) -->
+    <div id="breakdownModalOverlay" class="modal-overlay opacity-0 invisible" onclick="handleBackdropClick(event, 'breakdownModal')">
+        <div class="panel p-6 md:p-8 w-full max-w-sm flex flex-col gap-4 shadow-2xl modal-content scale-95 opacity-0" id="breakdownModalContent">
+            <div>
+                <h3 class="text-xl font-bold">Ανάλυση Πληρωμών</h3>
+                <p id="breakdownModalDesc" class="text-xs text-gray-500 mt-1 font-semibold uppercase tracking-wide"></p>
+            </div>
+            <div class="flex flex-col gap-3 mt-2">
+                <div class="flex justify-between items-center border-b pb-2">
+                    <span class="text-sm font-medium text-emerald-600 dark:text-emerald-400">Μετρητά:</span>
+                    <span id="bdCash" class="font-bold">€ 0.00</span>
+                </div>
+                <div class="flex justify-between items-center border-b pb-2">
+                    <span class="text-sm font-medium text-amber-600 dark:text-amber-500">Επιταγές:</span>
+                    <span id="bdCheque" class="font-bold">€ 0.00</span>
+                </div>
+                <div class="flex justify-between items-center border-b pb-2">
+                    <span class="text-sm font-medium text-sky-600 dark:text-sky-400">Τράπεζα:</span>
+                    <span id="bdBank" class="font-bold">€ 0.00</span>
+                </div>
+                <div class="flex justify-between items-center pt-3 mt-1 border-t-2 border-gray-800 dark:border-white">
+                    <span class="text-base font-bold text-white dark:text-white uppercase tracking-wider">ΣΥΝΟΛΟ:</span>
+                    <span id="bdTotal" class="font-bold text-xl text-blue-600 dark:text-blue-400">€ 0.00</span>
+                </div>
+            </div>
+            <button onclick="closeModals()" class="w-full bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 text-gray-800 dark:text-white font-medium py-3 rounded-lg mt-2 transition-colors text-sm">Κλείσιμο</button>
         </div>
     </div>
 
@@ -163,7 +191,7 @@
         </div>
     </div>
 
-    <!-- CONTRACTOR MODAL -->
+    <!-- CONTRACTOR / EXPENSE MODAL -->
     <div id="contractorModalOverlay" class="modal-overlay opacity-0 invisible" onclick="handleBackdropClick(event, 'contractorModal')">
         <div class="panel p-6 md:p-8 w-full max-w-md flex flex-col gap-5 shadow-2xl modal-content scale-95 opacity-0" id="contractorModalContent">
             <div>
@@ -194,7 +222,7 @@
             
             <!-- TOGGLE: PAYMENT VS EXPENSE -->
             <div class="flex bg-gray-200 dark:bg-gray-900 rounded-lg p-1 mb-2 border border-gray-300 dark:border-gray-800">
-                <button id="tabPayContractor" class="flex-1 py-2 text-sm font-medium rounded-md bg-blue-600 text-white shadow transition-colors">Συνεργείο</button>
+                <button id="tabPayContractor" class="flex-1 py-2 text-sm font-medium rounded-md bg-blue-600 text-white shadow transition-colors text-white-force">Συνεργείο</button>
                 <button id="tabPayExpense" class="flex-1 py-2 text-sm font-medium rounded-md text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">Νέο Έξοδο</button>
             </div>
 
@@ -253,7 +281,7 @@
             <nav class="flex flex-col gap-2 flex-1">
                 <button onclick="switchTab('dashboard')" id="nav-dashboard" class="sidebar-active flex items-center gap-3 px-4 py-4 md:py-3 rounded-xl transition-all w-full text-left">
                     <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
-                    <span class="font-medium">Dashboard</span>
+                    <span class="font-medium">Αρχική</span>
                 </button>
                 <button onclick="switchTab('contractors')" id="nav-contractors" class="sidebar-inactive flex items-center gap-3 px-4 py-4 md:py-3 rounded-xl transition-all w-full text-left">
                     <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
@@ -353,7 +381,7 @@
                             <button onclick="openContractorModal()" class="flex-1 sm:flex-none justify-center px-3 py-2 text-xs font-medium rounded-lg bg-emerald-600/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 hover:bg-emerald-600/20 transition-all flex items-center gap-1">
                                 + Συνεργείο
                             </button>
-                            <button onclick="openPaymentModal()" class="flex-1 sm:flex-none justify-center px-3 py-2 text-xs font-medium rounded-lg bg-blue-600 hover:bg-blue-500 text-white shadow-lg transition-all flex items-center gap-1">
+                            <button onclick="openPaymentModal()" class="flex-1 sm:flex-none justify-center px-3 py-2 text-xs font-medium rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-force transition-all flex items-center gap-1 text-white-force">
                                 + Πληρωμή / Έξοδο
                             </button>
                         </div>
@@ -398,29 +426,34 @@
                 <!-- Right: Details -->
                 <div id="contractorsDetailPanel" class="panel w-full md:flex-1 flex-col h-full overflow-hidden absolute md:relative inset-0 z-20 md:z-0 hidden md:flex">
                     
-                    <div id="contractorEmptyState" class="absolute inset-0 flex flex-col items-center justify-center z-10 opacity-60 backdrop-blur-sm rounded-[24px] bg-[#0b0f19] dark:bg-[#0b0f19]">
+                    <div id="contractorEmptyState" class="absolute inset-0 flex flex-col items-center justify-center z-10 opacity-60 backdrop-blur-sm rounded-[24px] bg-[#0b0f19] dark:bg-[#0b0f19] transition-all duration-300">
                         <svg class="w-12 h-12 md:w-16 md:h-16 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
                         <span class="text-sm md:text-base px-6 text-center">Επιλέξτε ένα στοιχείο από τη λίστα.</span>
                     </div>
                     
-                    <div id="contractorDetails" class="hidden flex-col h-full overflow-hidden">
+                    <div id="contractorDetails" class="hidden flex-col h-full overflow-hidden transition-all duration-300">
                         <div class="p-4 md:p-6 border-b shrink-0 flex flex-col sm:flex-row justify-between items-start md:rounded-t-[24px] gap-4 sm:gap-0 bg-[#0f1523]">
                             <div class="min-w-0 pr-4 flex items-center gap-3 w-full sm:w-auto">
                                 <button onclick="backToContractorList()" class="md:hidden p-2 -ml-2 rounded-lg bg-gray-500/20 shrink-0">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
                                 </button>
-                                <div class="min-w-0 flex-1">
-                                    <h2 id="detName" class="text-xl md:text-2xl font-bold tracking-tight truncate">Όνομα</h2>
+                                <div class="min-w-0 flex-1" id="detNameContainer">
+                                    <h2 id="detName" class="text-xl md:text-2xl font-bold tracking-tight truncate flex items-center">Όνομα</h2>
                                     <p id="detJob" class="text-xs md:text-sm text-blue-600 dark:text-blue-400 mt-0.5 font-medium truncate">Αντικείμενο</p>
                                     <p id="detInternalNotes" class="text-xs md:text-sm text-amber-600 dark:text-amber-500 mt-1 italic break-words whitespace-normal hidden"></p>
                                 </div>
                             </div>
-                            <div class="flex gap-2 shrink-0 w-full sm:w-auto mt-3 sm:mt-0">
+                            <div class="flex gap-2 shrink-0 w-full sm:w-auto mt-3 sm:mt-0 flex-wrap sm:flex-nowrap">
                                 <button onclick="printStatement()" class="flex-1 sm:flex-none justify-center border font-medium px-3 py-2 rounded-lg transition-colors flex items-center gap-1.5 text-xs md:text-sm shadow-sm opacity-90 hover:opacity-100">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
                                     <span class="hidden sm:inline">Εκτύπωση</span>
                                 </button>
-                                <button onclick="openPaymentModalSpecific()" class="flex-1 sm:flex-none justify-center bg-blue-600 hover:bg-blue-500 text-white font-medium px-3 py-2 rounded-lg transition-colors flex items-center gap-1.5 text-xs md:text-sm shadow-lg">
+                                <!-- Εξαγωγή Excel -->
+                                <button onclick="exportStatementExcel()" class="flex-1 sm:flex-none justify-center border border-emerald-300 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 font-medium px-3 py-2 rounded-lg transition-colors flex items-center gap-1.5 text-xs md:text-sm shadow-sm opacity-90 hover:opacity-100">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                    <span class="hidden sm:inline">Excel</span>
+                                </button>
+                                <button onclick="openPaymentModalSpecific()" class="flex-1 sm:flex-none justify-center bg-blue-600 hover:bg-blue-500 text-white font-medium px-3 py-2 rounded-lg transition-colors flex items-center gap-1.5 text-xs md:text-sm shadow-lg text-white-force">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
                                     Νέα Πληρωμή
                                 </button>
@@ -432,10 +465,13 @@
                                 <p id="detOfferLabel" class="text-[10px] opacity-70 uppercase tracking-widest font-semibold mb-1">Αρχικη Συμφωνια</p>
                                 <p id="detOffer" class="text-lg md:text-xl font-bold truncate">€ 0.00</p>
                             </div>
-                            <div class="border rounded-xl p-3 md:p-4 bg-white dark:bg-blue-900/20">
-                                <p id="detPaidLabel" class="text-[10px] text-emerald-600 dark:text-emerald-400 uppercase tracking-widest font-semibold mb-1">Πληρωμενα / Εξοδα</p>
-                                <p id="detPaid" class="text-lg md:text-xl font-bold text-emerald-600 dark:text-emerald-400 truncate">€ 0.00</p>
+                            
+                            <!-- ΠΛΕΟΝ ΤΟ ΚΟΥΤΙ ΑΥΤΟ ΠΑΤΙΕΤΑΙ ΣΩΣΤΑ -->
+                            <div id="detPaidContainer" class="border rounded-xl p-3 md:p-4 bg-white dark:bg-blue-900/20 cursor-pointer hover:bg-gray-50 dark:hover:bg-blue-900/30 transition-colors shadow-sm hover:shadow-md">
+                                <p id="detPaidLabel" class="text-[10px] text-emerald-600 dark:text-emerald-400 uppercase tracking-widest font-semibold mb-1">Πληρωμενα / Εξοδα <span class="text-[8px] opacity-70">(Ανάλυση)</span></p>
+                                <p id="detPaid" class="text-lg md:text-xl font-bold text-emerald-600 dark:text-emerald-400 truncate underline decoration-dashed underline-offset-4">€ 0.00</p>
                             </div>
+                            
                             <div class="border rounded-xl p-3 md:p-4 bg-white dark:bg-blue-900/20">
                                 <p id="detBalanceLabel" class="text-[10px] opacity-70 uppercase tracking-widest font-semibold mb-1">Υπολοιπο</p>
                                 <p id="detBalance" class="text-lg md:text-xl font-bold truncate">€ 0.00</p>
@@ -443,7 +479,15 @@
                         </div>
 
                         <div class="flex-1 overflow-hidden flex flex-col">
-                            <h4 class="text-xs md:text-sm font-semibold p-4 pb-2 border-b shrink-0 opacity-80">Ιστορικό Κινήσεων</h4>
+                            <div class="flex justify-between items-center p-4 pb-2 border-b shrink-0">
+                                <h4 class="text-xs md:text-sm font-semibold opacity-80">Ιστορικό Κινήσεων</h4>
+                                <select id="historyFilter" onchange="updateDetailView()" class="text-[10px] md:text-xs border border-gray-300 dark:border-gray-700 rounded-lg px-2 py-1 bg-transparent focus:outline-none focus:border-blue-500 cursor-pointer">
+                                    <option value="all">Όλες οι Κινήσεις</option>
+                                    <option value="Μετρητά">Μετρητά</option>
+                                    <option value="Επιταγή">Επιταγές</option>
+                                    <option value="Τράπεζα">Τράπεζα</option>
+                                </select>
+                            </div>
                             <div class="flex-1 overflow-x-auto overflow-y-auto px-2 md:px-4 pb-4 relative z-10">
                                 <table class="w-full text-left min-w-[500px] md:min-w-[600px]">
                                     <thead class="sticky top-0 z-30 bg-[#0f1523]">
@@ -536,20 +580,20 @@
         // --- PAYMENT MODAL TOGGLE ---
         document.getElementById('tabPayContractor').addEventListener('click', () => {
             isExpenseMode = false;
-            document.getElementById('tabPayContractor').className = "flex-1 py-2 text-sm font-medium rounded-md bg-blue-600 text-white shadow transition-colors";
+            document.getElementById('tabPayContractor').className = "flex-1 py-2 text-sm font-medium rounded-md bg-blue-600 text-white shadow transition-colors text-white-force";
             document.getElementById('tabPayExpense').className = "flex-1 py-2 text-sm font-medium rounded-md text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors";
             document.getElementById('paymentContractorSelect').classList.remove('hidden');
             document.getElementById('expenseNameInput').classList.add('hidden');
         });
         document.getElementById('tabPayExpense').addEventListener('click', () => {
             isExpenseMode = true;
-            document.getElementById('tabPayExpense').className = "flex-1 py-2 text-sm font-medium rounded-md bg-blue-600 text-white shadow transition-colors";
+            document.getElementById('tabPayExpense').className = "flex-1 py-2 text-sm font-medium rounded-md bg-blue-600 text-white shadow transition-colors text-white-force";
             document.getElementById('tabPayContractor').className = "flex-1 py-2 text-sm font-medium rounded-md text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors";
             document.getElementById('paymentContractorSelect').classList.add('hidden');
             document.getElementById('expenseNameInput').classList.remove('hidden');
         });
 
-        // --- RESPONSIVE LOGIC ---
+        // --- RESPONSIVE & UI RESET LOGIC ---
         window.toggleSidebar = function() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('mobileSidebarOverlay');
@@ -582,18 +626,25 @@
 
         window.addEventListener('resize', applyResponsiveContractorView);
 
-        window.backToContractorList = function() {
+        window.clearDetailView = function() {
             selectedContractorId = null;
-            applyResponsiveContractorView();
-            renderContractorsList();
             document.getElementById('contractorEmptyState').classList.remove('hidden');
             document.getElementById('contractorDetails').classList.add('hidden');
             document.getElementById('contractorDetails').classList.remove('flex');
+            applyResponsiveContractorView();
+        };
+
+        window.backToContractorList = function() {
+            clearDetailView();
+            renderContractorsList();
         };
 
         window.switchTab = function(tabName, preserveSelection = false) {
             currentTab = tabName;
-            if(!preserveSelection) selectedContractorId = null;
+            
+            if(!preserveSelection) {
+                clearDetailView(); // Καθαρίζει την επιλογή όταν αλλάζουμε καρτέλα από το μενού
+            }
             
             const vDash = document.getElementById('view-dashboard');
             const vCont = document.getElementById('view-contractors');
@@ -615,11 +666,7 @@
                 nExp.className = (tabName === 'expenses') ? "sidebar-active flex items-center gap-3 px-4 py-4 md:py-3 rounded-xl transition-all w-full text-left" : "sidebar-inactive flex items-center gap-3 px-4 py-4 md:py-3 rounded-xl transition-all w-full text-left";
                 
                 document.getElementById('listTitleHeader').innerText = (tabName === 'expenses') ? 'Γενικά Έξοδα' : 'Λίστα Συνεργείων';
-                if(tabName === 'expenses') {
-                    document.getElementById('btnAddContractorList').classList.add('hidden');
-                } else {
-                    document.getElementById('btnAddContractorList').classList.remove('hidden');
-                }
+                document.getElementById('btnAddContractorList').innerHTML = (tabName === 'expenses') ? '+ Νέο Έξοδο' : '+ Προσθήκη';
                 
                 renderContractorsList();
                 if(selectedContractorId) updateDetailView();
@@ -627,6 +674,29 @@
             }
         };
 
+        window.openBreakdownModal = function(cId) {
+            const c = globalContractors.find(x => x.id === cId);
+            if(!c) return;
+
+            const cPayments = globalPayments.filter(p => p.contractorId === cId);
+            let cash = 0, cheque = 0, bank = 0, total = 0;
+
+            cPayments.forEach(p => {
+                const amt = parseFloat(p.amount || 0);
+                total += amt;
+                if(p.type === 'Τράπεζα') bank += amt;
+                else if(p.type === 'Επιταγή') cheque += amt;
+                else cash += amt;
+            });
+
+            document.getElementById('breakdownModalDesc').innerText = c.name + " (" + c.job + ")";
+            document.getElementById('bdCash').innerText = formatEur(cash);
+            document.getElementById('bdCheque').innerText = formatEur(cheque);
+            document.getElementById('bdBank').innerText = formatEur(bank);
+            document.getElementById('bdTotal').innerText = formatEur(total);
+
+            openModal('breakdownModalOverlay', 'breakdownModalContent');
+        };
         
         window.openNewShipModal = function() {
             document.getElementById('editShipId').value = '';
@@ -670,10 +740,8 @@
                 await deleteDoc(doc(db, "ships", id));
                 window.closeModals();
                 window.showToast("Το πλοίο διαγράφηκε.");
-                selectedContractorId = null;
+                clearDetailView();
                 await loadShips();
-                // We don't have resetUI defined in your code snippet provided previously, 
-                // but let's clear the selector value and refresh
                 shipSelector.value = '';
                 refreshDashboard();
             } catch(err) {
@@ -707,17 +775,48 @@
             const title = document.getElementById('contractorModalTitle');
             const desc = document.getElementById('contractorModalDesc');
 
+            let isExp = false;
             if(editId) {
                 const c = globalContractors.find(x => x.id === editId);
-                elId.value = editId; elName.value = c.name; elJob.value = c.job; 
-                elOffer.value = c.isExpense ? "" : c.offer;
-                if(c.isExpense) elOffer.disabled = true; else elOffer.disabled = false;
+                isExp = c.isExpense;
+                elId.value = editId; 
+                elName.value = c.name; 
+                elJob.value = c.job; 
+                elOffer.value = c.offer || "";
                 elNotes.value = c.internalNotes || "";
-                title.innerText = "Επεξεργασία"; desc.innerText = "Τροποποίηση στοιχείων.";
             } else {
-                elId.value = ""; elName.value = ""; elJob.value = ""; elOffer.value = ""; elNotes.value = ""; elOffer.disabled = false;
-                title.innerText = "Προσθήκη Συνεργείου"; desc.innerText = "Δημιουργήστε νέα καρτέλα συνεργείου.";
+                isExp = (currentTab === 'expenses');
+                elId.value = ""; 
+                elName.value = ""; 
+                elJob.value = ""; 
+                elOffer.value = ""; 
+                elNotes.value = "";
             }
+
+            if (isExp) {
+                title.innerText = editId ? "Επεξεργασία Εξόδου" : "Προσθήκη Εξόδου";
+                desc.innerText = "Στοιχεία γενικού εξόδου.";
+                elName.placeholder = "Περιγραφή Εξόδου (π.χ. Καύσιμα)";
+                
+                elJob.value = "Γενικό Έξοδο";
+                elJob.readOnly = true; // Κλείδωμα Πεδίου για αποφυγή λαθών
+                elJob.classList.add('opacity-70', 'cursor-not-allowed', 'bg-gray-100', 'dark:bg-gray-800');
+                
+                elOffer.placeholder = "Ποσό / Προϋπολογισμός (€)";
+            } else {
+                title.innerText = editId ? "Επεξεργασία Συνεργείου" : "Προσθήκη Συνεργείου";
+                desc.innerText = "Δημιουργήστε νέα καρτέλα συνεργείου.";
+                elName.placeholder = "Επωνυμία / Ονοματεπώνυμο";
+                elJob.placeholder = "Αντικείμενο (π.χ. Ηλεκτρολογικά)";
+                
+                elJob.readOnly = false;
+                elJob.classList.remove('opacity-70', 'cursor-not-allowed', 'bg-gray-100', 'dark:bg-gray-800');
+                
+                elOffer.placeholder = "Αρχική Συμφωνία (€)";
+            }
+            
+            elOffer.disabled = false;
+            
             openModal('contractorModalOverlay', 'contractorModalContent', 'newContractorName');
         };
 
@@ -791,7 +890,7 @@
         window.handleBackdropClick = function(event, modalPrefix) { if (event.target.id === modalPrefix + 'Overlay') closeModals(); }
 
         window.closeModals = function() {
-            const modals = ['shipModal', 'contractorModal', 'paymentModal'];
+            const modals = ['shipModal', 'contractorModal', 'paymentModal', 'breakdownModal'];
             modals.forEach(id => {
                 const overlay = document.getElementById(id+'Overlay');
                 const content = document.getElementById(id+'Content');
@@ -818,14 +917,26 @@
             const targetTab = c.isExpense ? 'expenses' : 'contractors';
             switchTab(targetTab, true);
             selectedContractorId = cId;
+            
+            // Reset filter dropdown when changing contractor
+            const historyFilter = document.getElementById('historyFilter');
+            if(historyFilter) historyFilter.value = 'all';
+
             renderContractorsList(); 
             updateDetailView();
         };
 
         window.updateDetailView = function() {
-            if(!selectedContractorId) return;
+            if(!selectedContractorId) {
+                clearDetailView();
+                return;
+            }
+            
             const c = globalContractors.find(x => x.id === selectedContractorId);
-            if(!c) return;
+            if(!c) {
+                clearDetailView();
+                return;
+            }
 
             document.getElementById('contractorEmptyState').classList.add('hidden');
             document.getElementById('contractorDetails').classList.remove('hidden');
@@ -836,9 +947,18 @@
             
             let paid = 0;
             cPayments.forEach(p => paid += parseFloat(p.amount || 0));
-            const offer = c.isExpense ? paid : parseFloat(c.offer || 0);
+            const offer = parseFloat(c.offer || 0);
             
-            document.getElementById('detName').innerText = c.name;
+            const elBal = document.getElementById('detBalance');
+            const balance = offer - paid;
+            
+            let paidBadge = '';
+            // Εξοφλήθηκε ένδειξη (Δείχνει μόνο αν υπάρχει αρχική συμφωνία και το υπόλοιπο καλύφθηκε)
+            if (offer > 0 && balance <= 0) {
+                paidBadge = '<span class="ml-3 bg-emerald-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider shadow-sm flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> ΕΞΟΦΛΗΘΗΚΕ</span>';
+            }
+
+            document.getElementById('detName').innerHTML = c.name + paidBadge;
             document.getElementById('detJob').innerText = c.job;
             
             const elInternalNotes = document.getElementById('detInternalNotes');
@@ -850,34 +970,56 @@
 
             document.getElementById('detPaid').innerText = formatEur(paid);
             
-            const elBal = document.getElementById('detBalance');
-            const balance = offer - paid;
 
             if(c.isExpense) {
-                document.getElementById('detOffer').innerText = '-';
-                elBal.innerText = '-';
-                elBal.className = "text-lg md:text-xl font-bold opacity-60 truncate";
-                document.getElementById('detOfferLabel').innerText = "Αφορα Ολο το Πλοιο";
-                document.getElementById('detPaidLabel').innerText = "Συνολο Εξοδου";
-                document.getElementById('detBalanceLabel').innerText = "-";
+                document.getElementById('detOfferLabel').innerText = "Προϋπολογισμος / Ποσο";
+                document.getElementById('detPaidLabel').innerText = "Πληρωμενα / Εξοδα";
+                document.getElementById('detBalanceLabel').innerText = "Υπολοιπο";
+                
+                if (offer === 0) {
+                    // Αν είναι έξοδο χωρίς προϋπολογισμό, δείξε απλά παύλα, όχι αρνητικό νούμερο
+                    document.getElementById('detOffer').innerText = '-';
+                    elBal.innerText = '-';
+                    elBal.className = "text-lg md:text-xl font-bold opacity-60 truncate";
+                } else {
+                    // Αν έβαλε προϋπολογισμό, δούλεψέ το κανονικά
+                    document.getElementById('detOffer').innerText = formatEur(offer);
+                    elBal.innerText = formatEur(balance);
+                    if(balance < 0) elBal.className = "text-lg md:text-xl font-bold text-rose-500 truncate";
+                    else if(balance === 0) elBal.className = "text-lg md:text-xl font-bold text-emerald-600 dark:text-emerald-400 truncate";
+                    else elBal.className = "text-lg md:text-xl font-bold text-amber-500 truncate";
+                }
             } else {
+                document.getElementById('detOfferLabel').innerText = "Αρχικη Συμφωνια";
+                document.getElementById('detPaidLabel').innerText = "Πληρωμενα";
+                document.getElementById('detBalanceLabel').innerText = "Υπολοιπο";
+                
                 document.getElementById('detOffer').innerText = formatEur(offer);
                 elBal.innerText = formatEur(balance);
                 if(balance < 0) elBal.className = "text-lg md:text-xl font-bold text-rose-500 truncate";
                 else if(balance === 0) elBal.className = "text-lg md:text-xl font-bold text-emerald-600 dark:text-emerald-400 truncate";
                 else elBal.className = "text-lg md:text-xl font-bold text-amber-500 truncate";
-                document.getElementById('detOfferLabel').innerText = "Αρχικη Συμφωνια";
-                document.getElementById('detPaidLabel').innerText = "Πληρωμενα";
-                document.getElementById('detBalanceLabel').innerText = "Υπολοιπο";
             }
+
+            // Συνδέουμε δυναμικά το click event για το modal Ανάλυσης στην Καρτέλα Συνεργείου
+            document.getElementById('detPaidContainer').onclick = function() {
+                openBreakdownModal(selectedContractorId);
+            };
 
             const tbody = document.getElementById('detTransactionsBody');
             tbody.innerHTML = '';
             
-            if(cPayments.length === 0) {
+            // Εφαρμογή του Φίλτρου
+            const filterVal = document.getElementById('historyFilter').value;
+            let filteredPayments = cPayments;
+            if (filterVal !== 'all') {
+                filteredPayments = cPayments.filter(p => p.type === filterVal);
+            }
+
+            if(filteredPayments.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="5" class="text-center py-6 opacity-70 text-xs font-medium">Δεν υπάρχουν κινήσεις.</td></tr>';
             } else {
-                cPayments.forEach(p => {
+                filteredPayments.forEach(p => {
                     let badge = '';
                     if(p.type === 'Τράπεζα') badge = '<span class="px-2 py-0.5 text-[10px] rounded border text-sky-600 bg-sky-50 dark:bg-sky-500/10 border-sky-200 dark:border-sky-500/30 dark:text-sky-400 whitespace-nowrap">Τράπεζα</span>';
                     else if(p.type === 'Επιταγή') badge = '<span class="px-2 py-0.5 text-[10px] rounded border text-amber-600 bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/30 dark:text-amber-400 whitespace-nowrap">Επιταγή</span>';
@@ -926,11 +1068,13 @@
                 <!DOCTYPE html>
                 <html>
                 <head>
-                    <title> </title>
+                    <title>Εκτύπωση</title>
                     <style>
                         body { font-family: Arial, sans-serif; color: #000; background: #fff; padding: 20px; font-size: 14px; -webkit-print-color-adjust: exact;}
                         table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; table-layout: fixed; }
                         th, td { border: 1px solid #ccc; padding: 10px; }
+                        .summary-table { width: 50%; margin-top: 10px; margin-bottom: 30px; }
+                        .summary-table td { padding: 6px 10px; border: 1px solid #ddd; }
                     </style>
                 </head>
                 <body>${contentHtml}</body>
@@ -938,10 +1082,11 @@
             `);
             doc.close();
 
+            // Μειώθηκε ο χρόνος αναμονής δραματικά για να ανοίγει γρήγορα (από 1000ms σε 150ms)
             setTimeout(() => {
                 try { iframe.contentWindow.focus(); iframe.contentWindow.print(); } catch (e) { console.error("Print failed", e); }
                 setTimeout(() => { document.body.removeChild(iframe); }, 2000);
-            }, 1000); 
+            }, 150); 
         };
 
         window.printStatement = function() {
@@ -952,9 +1097,17 @@
             const shipName = s.name || 'Άγνωστο';
             const shipCompany = s.company || 'Άγνωστη Εταιρεία';
             
-            let paid = 0; cPayments.forEach(p => paid += parseFloat(p.amount || 0));
-            const offer = c.isExpense ? paid : parseFloat(c.offer || 0);
-            const balance = c.isExpense ? 0 : offer - paid;
+            let paid = 0, cash = 0, cheque = 0, bank = 0; 
+            cPayments.forEach(p => {
+                const amt = parseFloat(p.amount || 0);
+                paid += amt;
+                if(p.type === 'Τράπεζα') bank += amt;
+                else if(p.type === 'Επιταγή') cheque += amt;
+                else cash += amt;
+            });
+
+            const offer = parseFloat(c.offer || 0);
+            const balance = offer - paid;
 
             let rows = cPayments.map(p => `
                 <tr>
@@ -973,6 +1126,7 @@
                         <p style="margin-bottom: 5px;"><strong>ΠΛΟΙΟ:</strong> ${shipName}</p>
                         <p><strong>ΣΥΝΕΡΓΕΙΟ / ΕΞΟΔΟ:</strong> ${c.name} (${c.job})</p>
                     </div>
+                    
                     ${!c.isExpense ? `
                     <table>
                         <tr><td style="background:#f9f9f9; width: 50%;">Αρχική Συμφωνία</td><td style="text-align:right; font-weight:bold;">${formatEur(offer)}</td></tr>
@@ -980,9 +1134,21 @@
                         <tr><td style="background:#f9f9f9;">Τρέχον Υπόλοιπο</td><td style="text-align:right; font-weight:bold; color:${balance < 0 ? 'red' : 'black'};">${formatEur(balance)}</td></tr>
                     </table>
                     ` : `
-                    <table><tr><td style="background:#f9f9f9; width: 50%;">Σύνολο Γενικών Εξόδων</td><td style="text-align:right; font-weight:bold; color:green;">${formatEur(paid)}</td></tr></table>
+                    <table>
+                        <tr><td style="background:#f9f9f9; width: 50%;">Προϋπολογισμός / Ποσό</td><td style="text-align:right; font-weight:bold;">${offer > 0 ? formatEur(offer) : '-'}</td></tr>
+                        <tr><td style="background:#f9f9f9;">Σύνολο Εξόδων</td><td style="text-align:right; font-weight:bold; color:green;">${formatEur(paid)}</td></tr>
+                        <tr><td style="background:#f9f9f9;">Τρέχον Υπόλοιπο</td><td style="text-align:right; font-weight:bold; color:${(offer > 0 && balance < 0) ? 'red' : 'black'};">${offer > 0 ? formatEur(balance) : '-'}</td></tr>
+                    </table>
                     `}
-                    <h3 style="margin-top:40px; border-bottom: 1px solid #ccc; padding-bottom:5px;">Αναλυτικό Ιστορικό Κινήσεων</h3>
+
+                    <h3 style="margin-top:30px; font-size:16px; margin-bottom:5px;">Ανάλυση Πληρωμών</h3>
+                    <table class="summary-table">
+                        <tr><td style="background:#f9f9f9; width: 50%;">Μετρητά</td><td style="text-align:right;">${formatEur(cash)}</td></tr>
+                        <tr><td style="background:#f9f9f9;">Επιταγές</td><td style="text-align:right;">${formatEur(cheque)}</td></tr>
+                        <tr><td style="background:#f9f9f9;">Τράπεζα</td><td style="text-align:right;">${formatEur(bank)}</td></tr>
+                    </table>
+
+                    <h3 style="margin-top:20px; border-bottom: 1px solid #ccc; padding-bottom:5px;">Αναλυτικό Ιστορικό Κινήσεων</h3>
                     <table>
                         <thead style="background:#eee;">
                             <tr>
@@ -1012,7 +1178,8 @@
                 paidUpToNow += parseFloat(px.amount || 0);
                 if(px.id === p.id) break;
             }
-            const balance = (!c.isExpense) ? (parseFloat(c.offer || 0) - paidUpToNow) : 0;
+            const offer = parseFloat(c.offer || 0);
+            const balance = offer - paidUpToNow;
 
             const html = `
                 <div style="max-width: 600px; margin: 0 auto; border: 2px solid #333; padding: 40px; color: #000;">
@@ -1039,9 +1206,9 @@
                         <p style="word-wrap: break-word; word-break: break-word; margin: 0; font-size: 14px;"><strong>Αιτιολογία:</strong> <br>${p.notes || '-'}</p>
                     </div>
 
-                    ${!c.isExpense ? `
+                    ${(!c.isExpense || offer > 0) ? `
                     <div style="text-align: right; margin-bottom: 20px; font-size: 14px;">
-                        <p>Νέο Υπόλοιπο Συνεργείου: <strong>${formatEur(balance)}</strong></p>
+                        <p>Νέο Υπόλοιπο: <strong>${formatEur(balance)}</strong></p>
                     </div>
                     ` : ''}
                     
@@ -1070,11 +1237,20 @@
                 const isActive = (c.id === selectedContractorId);
                 const activeClass = isActive ? "c-item-active" : "border-transparent hover:bg-black/5 dark:hover:bg-white/5";
                 const isGen = c.isExpense;
+
+                // Υπολογισμός αν έχει εξοφληθεί για το σηματάκι στην λίστα
+                const cPayments = globalPayments.filter(p => p.contractorId === c.id);
+                let cTotalPaid = 0;
+                cPayments.forEach(p => cTotalPaid += parseFloat(p.amount || 0));
+                const offer = parseFloat(c.offer || 0);
+                const balance = offer - cTotalPaid;
+                
+                let listBadge = (offer > 0 && balance <= 0) ? '<span class="ml-2 bg-emerald-500 text-white text-[8px] px-1.5 py-0.5 rounded-sm font-bold uppercase tracking-wider">Εξοφληθηκε</span>' : '';
                 
                 listContainer.innerHTML += `
                     <div class="p-3 mb-2 rounded-xl cursor-pointer border-l-2 transition-all flex justify-between items-center ${activeClass}" onclick="rowClick('${c.id}')">
                         <div class="min-w-0 flex-1 pr-2">
-                            <p class="font-bold truncate text-sm ${isGen?'text-blue-600 dark:text-blue-400':''}">${c.name}</p>
+                            <p class="font-bold truncate text-sm flex items-center ${isGen?'text-blue-600 dark:text-blue-400':''}">${c.name} ${listBadge}</p>
                             <p class="text-[11px] md:text-xs opacity-70 mt-0.5 truncate">${c.job}</p>
                         </div>
                         <div class="flex items-center gap-1 shrink-0" onclick="event.stopPropagation()">
@@ -1198,12 +1374,6 @@
             
             cSnap.forEach(d => { 
                 const data = d.data();
-                if(data.isExpense) {
-                    const expPayments = globalPayments.filter(p => p.contractorId === d.id);
-                    let expTotal = 0;
-                    expPayments.forEach(p => expTotal += parseFloat(p.amount || 0));
-                    data.offer = expTotal;
-                }
                 globalContractors.push({id: d.id, ...data});
                 totalOffer += parseFloat(data.offer || 0);
             });
@@ -1229,15 +1399,25 @@
                     cPayments.forEach(p => cTotalPaid += parseFloat(p.amount || 0));
                     
                     const offer = parseFloat(c.offer || 0);
-                    const balance = isGen ? 0 : offer - cTotalPaid;
+                    const balance = offer - cTotalPaid;
                     
                     let pWidth = 0;
                     if(offer > 0) pWidth = Math.min(100, Math.max(0, (cTotalPaid / offer) * 100));
                     
                     let balColorClass = "text-amber-500"; let pBgColor = "bg-amber-500";
-                    if(balance < 0) { balColorClass = "text-rose-500"; pBgColor = "bg-rose-500"; }
-                    else if(balance === 0) { balColorClass = "text-emerald-600 dark:text-emerald-400"; pBgColor = "bg-emerald-500"; }
-                    if(isGen) balColorClass = "opacity-60";
+                    let displayOffer = formatEur(offer);
+                    let displayBalance = formatEur(balance);
+
+                    if (isGen && offer === 0) {
+                        balColorClass = "opacity-60";
+                        displayOffer = "-";
+                        displayBalance = "-";
+                    } else {
+                        if(balance < 0) { balColorClass = "text-rose-500"; pBgColor = "bg-rose-500"; }
+                        else if(balance === 0) { balColorClass = "text-emerald-600 dark:text-emerald-400"; pBgColor = "bg-emerald-500"; }
+                    }
+
+                    let listBadge = (offer > 0 && balance <= 0) ? '<span class="ml-2 bg-emerald-500 text-white text-[8px] px-1.5 py-0.5 rounded-sm font-bold uppercase tracking-wider">Εξοφληθηκε</span>' : '';
 
                     tbody.innerHTML += `
                         <tr class="clickable-row transition-colors group border-b" onclick="rowClick('${c.id}')">
@@ -1247,16 +1427,20 @@
                                         <svg class="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                                     </div>
                                     <div class="min-w-0">
-                                        <p class="font-bold truncate text-xs md:text-sm ${isGen?'text-blue-600 dark:text-blue-400':''}">${c.name}</p>
+                                        <p class="font-bold truncate text-xs md:text-sm flex items-center ${isGen?'text-blue-600 dark:text-blue-400':''}">${c.name} ${listBadge}</p>
                                         <p class="text-[9px] md:text-[11px] opacity-70 mt-0.5 uppercase tracking-wide truncate">${c.job}</p>
                                     </div>
                                 </div>
                             </td>
-                            <td class="py-4 md:py-5 text-right pr-4 md:pr-6"><p class="font-medium whitespace-nowrap text-xs md:text-sm opacity-90">${isGen ? '-' : formatEur(offer)}</p></td>
-                            <td class="py-4 md:py-5 text-right pr-4 md:pr-6"><p class="font-medium whitespace-nowrap text-xs md:text-sm opacity-90">${formatEur(cTotalPaid)}</p></td>
+                            <td class="py-4 md:py-5 text-right pr-4 md:pr-6"><p class="font-medium whitespace-nowrap text-xs md:text-sm opacity-90">${displayOffer}</p></td>
+                            <td class="py-4 md:py-5 text-right pr-4 md:pr-6">
+                                <p class="font-medium whitespace-nowrap text-xs md:text-sm opacity-90 cursor-pointer hover:text-blue-500 underline decoration-dashed underline-offset-4 transition-colors" onclick="event.stopPropagation(); openBreakdownModal('${c.id}')">
+                                    ${formatEur(cTotalPaid)}
+                                </p>
+                            </td>
                             <td class="py-4 md:py-5 text-right pr-4 md:pr-6 relative">
-                                <p class="font-bold ${balColorClass} text-sm md:text-lg whitespace-nowrap tracking-tight z-10 relative">${isGen ? '-' : formatEur(balance)}</p>
-                                ${!isGen ? `<div class="progress-bg w-full"><div class="progress-fill ${pBgColor}" style="width: ${pWidth}%"></div></div>` : ''}
+                                <p class="font-bold ${balColorClass} text-sm md:text-lg whitespace-nowrap tracking-tight z-10 relative">${displayBalance}</p>
+                                ${(!isGen || offer > 0) ? `<div class="progress-bg w-full"><div class="progress-fill ${pBgColor}" style="width: ${pWidth}%"></div></div>` : ''}
                             </td>
                             <td class="py-4 md:py-5 pr-4 md:pr-6 relative" onclick="event.stopPropagation()">
                                 <button onclick="toggleActionMenu(event, 'dash-${c.id}')" class="opacity-60 hover:opacity-100 hover:text-blue-600 dark:hover:text-blue-400 p-1 md:p-2 rounded transition-colors bg-gray-200 dark:bg-transparent">
@@ -1277,13 +1461,9 @@
             if(selectedContractorId && currentTab !== 'dashboard') {
                 const stillExists = globalContractors.find(c => c.id === selectedContractorId);
                 if(stillExists) updateDetailView();
-                else {
-                    selectedContractorId = null;
-                    document.getElementById('contractorEmptyState').classList.remove('hidden');
-                    document.getElementById('contractorDetails').classList.add('hidden');
-                    document.getElementById('contractorDetails').classList.remove('flex');
-                    applyResponsiveContractorView();
-                }
+                else clearDetailView();
+            } else if (!selectedContractorId && currentTab !== 'dashboard') {
+                clearDetailView();
             }
         }
 
@@ -1296,10 +1476,7 @@
             document.getElementById('transactionsBody').innerHTML = '<tr><td colspan="5" class="text-center py-10 opacity-70 text-xs md:text-sm">Επιλέξτε πλοίο για να δείτε τα δεδομένα.</td></tr>';
             globalContractors = []; globalPayments = []; globalShips = [];
             renderContractorsList();
-            document.getElementById('contractorEmptyState').classList.remove('hidden');
-            document.getElementById('contractorDetails').classList.add('hidden');
-            document.getElementById('contractorDetails').classList.remove('flex');
-            applyResponsiveContractorView();
+            clearDetailView();
         }
 
         document.getElementById('saveShipBtn').addEventListener('click', async () => {
@@ -1337,27 +1514,26 @@
         document.getElementById('saveContractorBtn').addEventListener('click', async () => {
             const id = document.getElementById('editContractorId').value;
             const name = document.getElementById('newContractorName').value.trim();
-            const job = document.getElementById('newContractorJob').value.trim();
+            let job = document.getElementById('newContractorJob').value.trim();
             const internalNotes = document.getElementById('newContractorInternalNotes').value.trim();
             
             let cObj = id ? globalContractors.find(x => x.id === id) : null;
-            let offer = 0;
-            if(!cObj || !cObj.isExpense) {
-                offer = parseFloat(document.getElementById('newContractorOffer').value);
-                if(!name || isNaN(offer)) { alert("Συμπληρώστε όνομα και ποσό."); return; }
-            } else {
-                if(!name) { alert("Συμπληρώστε το όνομα του εξόδου."); return; }
-                offer = cObj.offer; 
-            }
+            let offer = parseFloat(document.getElementById('newContractorOffer').value);
+            if(isNaN(offer)) offer = 0;
+            
+            if(!name) { alert("Συμπληρώστε όνομα/περιγραφή."); return; }
+            
+            let isExpense = cObj ? cObj.isExpense : (currentTab === 'expenses');
+            if (isExpense) job = 'Γενικό Έξοδο'; // Μόνιμα κλειδωμένο για τα έξοδα στο backend logic
             
             if(id) {
                 await updateDoc(doc(db, "contractors", id), { name, job, offer, internalNotes });
                 window.closeModals(); window.showToast("Ενημερώθηκε επιτυχώς!");
             } else {
-                const ref = await addDoc(collection(db, "contractors"), { shipId: shipSelector.value, name, job, offer, internalNotes, isExpense: false, timestamp: Date.now() });
+                const ref = await addDoc(collection(db, "contractors"), { shipId: shipSelector.value, name, job, offer, internalNotes, isExpense: isExpense, timestamp: Date.now() });
                 selectedContractorId = ref.id; 
                 window.closeModals(); window.showToast("Καταχωρήθηκε επιτυχώς!");
-                switchTab('contractors'); 
+                switchTab(isExpense ? 'expenses' : 'contractors'); 
             }
             await refreshDashboard();
         });
@@ -1377,7 +1553,7 @@
                 const expenseName = document.getElementById('expenseNameInput').value.trim();
                 if(!expenseName) { alert("Γράψτε την περιγραφή του εξόδου (π.χ. Νερά)."); return; }
                 const cRef = await addDoc(collection(db, "contractors"), { 
-                    shipId: shipSelector.value, name: expenseName, job: 'Γενικό Έξοδο', offer: amount, isExpense: true, timestamp: Date.now() 
+                    shipId: shipSelector.value, name: expenseName, job: 'Γενικό Έξοδο', offer: 0, isExpense: true, timestamp: Date.now() 
                 });
                 contractorIdToUse = cRef.id;
             } else if (isExpenseMode && id) {
@@ -1419,7 +1595,7 @@
                 await deleteDoc(doc(db, "contractors", id));
                 const pToDel = globalPayments.filter(p => p.contractorId === id);
                 for(let p of pToDel) { await deleteDoc(doc(db, "payments", p.id)); }
-                if(selectedContractorId === id) selectedContractorId = null;
+                if(selectedContractorId === id) clearDetailView();
                 window.showToast("Διαγράφηκε επιτυχώς.");
                 refreshDashboard();
             }
