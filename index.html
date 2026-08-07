@@ -266,10 +266,10 @@
                     <option value="Τράπεζα">Τράπεζα (Μεταφορά)</option>
                 </select>
 
-                <!-- ΕΜΦΑΝΕΣ ΕΥΧΡΗΣΤΟ ΠΕΔΙΟ ΗΜΕΡΟΜΗΝΙΑΣ (type="date") -->
-                <div>
-                    <label class="block text-[11px] text-gray-500 dark:text-gray-400 uppercase tracking-wider font-semibold mb-1">Ημερομηνια Κινησης</label>
-                    <input type="date" id="paymentDate" class="w-full border rounded-lg px-4 py-3 focus:border-blue-500 focus:outline-none cursor-pointer">
+                <!-- ΒΕΛΤΙΩΣΗ: Κομψή, compact γραμμή ημερομηνίας που δεν είναι γιγάντια στο iOS -->
+                <div class="flex items-center justify-between border rounded-lg px-4 py-2.5 bg-white dark:bg-white/5 border-gray-300 dark:border-white/10">
+                    <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">ΗΜΕΡΟΜΗΝΙΑ</span>
+                    <input type="date" id="paymentDate" class="bg-transparent border-none text-sm font-semibold focus:outline-none cursor-pointer text-right">
                 </div>
 
                 <!-- Check Fields -->
@@ -455,7 +455,6 @@
                     <div class="p-4 md:p-5 border-b shrink-0 flex justify-between items-center rounded-t-[24px] bg-[#0f1523]">
                         <h3 class="font-semibold text-base md:text-lg" id="listTitleHeader">Λίστα</h3>
                         <div class="flex gap-2">
-                            <!-- ΒΕΛΤΙΩΣΗ: Αλλαγή σε handleListAddButton ώστε στα Γενικά Έξοδα να ανοίγει απευθείας Πληρωμή! -->
                             <button id="btnAddContractorList" onclick="handleListAddButton()" class="px-2 py-1.5 text-xs font-medium rounded-lg bg-emerald-600/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 hover:bg-emerald-600/20 transition-all flex items-center gap-1" title="Προσθήκη">
                                 + Προσθήκη
                             </button>
@@ -686,7 +685,6 @@
             renderContractorsList();
         };
 
-        // ΒΕΛΤΙΩΣΗ: Το κουμπί στη λίστα αριστερά ανοίγει ΝΕΑ ΠΛΗΡΩΜΗ στα έξοδα, και ΝΕΟ ΣΥΝΕΡΓΕΙΟ στα συνεργεία!
         window.handleListAddButton = function() {
             if (currentTab === 'expenses') {
                 openPaymentModal(null, null, true);
@@ -805,10 +803,17 @@
             openModal('shipModalOverlay', 'shipModalContent', 'newShipCompany');
         };
 
+        // ΒΕΛΤΙΩΣΗ: Πλήρης, αλάνθαστη επιλογή πλοίου κατά το πάτημα "Επεξεργασία Πλοίου"
         window.openEditShipModal = function(e) {
             if (e && e.stopPropagation) e.stopPropagation();
-            if(!shipSelector.value) { alert("Επιλέξτε πρώτα πλοίο για επεξεργασία."); return; }
-            const ship = globalShips.find(s => s.id === shipSelector.value);
+            let sid = shipSelector.value;
+            if(!sid && globalShips.length > 0) {
+                sid = globalShips[0].id;
+                shipSelector.value = sid;
+                localStorage.setItem('fleet_last_ship_id', sid);
+            }
+            if(!sid) { alert("Επιλέξτε πρώτα πλοίο για επεξεργασία."); return; }
+            const ship = globalShips.find(s => s.id === sid);
             if(!ship) return;
             document.getElementById('editShipId').value = ship.id;
             document.getElementById('newShipCompany').value = ship.company || '';
@@ -836,6 +841,7 @@
                     await deleteDoc(doc(db, "contractors", d.id));
                 }
                 await deleteDoc(doc(db, "ships", id));
+                localStorage.removeItem('fleet_last_ship_id');
                 window.closeModals();
                 window.showToast("Το πλοίο διαγράφηκε.");
                 clearDetailView();
@@ -849,7 +855,13 @@
 
         window.openModal = function(overlayId, contentId, focusId) {
             if(!shipSelector.value && overlayId !== 'shipModalOverlay') {
-                alert("Πρέπει πρώτα να επιλέξετε ή να δημιουργήσετε πλοίο!"); return;
+                if (globalShips.length > 0) {
+                    shipSelector.value = globalShips[0].id;
+                    localStorage.setItem('fleet_last_ship_id', globalShips[0].id);
+                    setupDashboardListeners();
+                } else {
+                    alert("Πρέπει πρώτα να επιλέξετε ή να δημιουργήσετε πλοίο!"); return;
+                }
             }
             const overlay = document.getElementById(overlayId);
             const content = document.getElementById(contentId);
@@ -861,7 +873,15 @@
         };
 
         window.openContractorModal = function(editId = null) {
-            if(!shipSelector.value) { alert("Επιλέξτε πλοίο."); return; }
+            if(!shipSelector.value) {
+                if (globalShips.length > 0) {
+                    shipSelector.value = globalShips[0].id;
+                    localStorage.setItem('fleet_last_ship_id', globalShips[0].id);
+                    setupDashboardListeners();
+                } else {
+                    alert("Επιλέξτε πλοίο."); return;
+                }
+            }
             const elId = document.getElementById('editContractorId');
             const elName = document.getElementById('newContractorName');
             const elJob = document.getElementById('newContractorJob');
@@ -925,9 +945,16 @@
             }
         });
 
-        // ΒΕΛΤΙΩΣΗ: Προσθήκη επιλογής forceExpense ώστε όταν καλείται από τα Έξοδα να γυρίζει πάντα στο tab Εξόδου
         window.openPaymentModal = function(presetContractorId = null, editPaymentId = null, forceExpense = false) {
-            if(!shipSelector.value) { alert("Επιλέξτε πλοίο."); return; }
+            if(!shipSelector.value) {
+                if (globalShips.length > 0) {
+                    shipSelector.value = globalShips[0].id;
+                    localStorage.setItem('fleet_last_ship_id', globalShips[0].id);
+                    setupDashboardListeners();
+                } else {
+                    alert("Επιλέξτε πλοίο."); return;
+                }
+            }
             
             const select = document.getElementById('paymentContractorSelect');
             select.innerHTML = '<option value="">Επιλογή Συνεργείου...</option>';
@@ -1471,12 +1498,21 @@
                     shipSelector.appendChild(opt);
                 });
                 
-                if (pendingAutoSelectShipId) {
+                const savedShipId = localStorage.getItem('fleet_last_ship_id');
+                if (pendingAutoSelectShipId && globalShips.find(s => s.id === pendingAutoSelectShipId)) {
                     shipSelector.value = pendingAutoSelectShipId;
+                    localStorage.setItem('fleet_last_ship_id', pendingAutoSelectShipId);
                     pendingAutoSelectShipId = null;
                     setupDashboardListeners();
                 } else if (currentSelection && globalShips.find(s => s.id === currentSelection)) {
                     shipSelector.value = currentSelection;
+                } else if (savedShipId && globalShips.find(s => s.id === savedShipId)) {
+                    shipSelector.value = savedShipId;
+                    setupDashboardListeners();
+                } else if (globalShips.length > 0) {
+                    shipSelector.value = globalShips[0].id;
+                    localStorage.setItem('fleet_last_ship_id', globalShips[0].id);
+                    setupDashboardListeners();
                 } else {
                     shipSelector.value = '';
                     setupDashboardListeners();
@@ -1486,6 +1522,11 @@
 
         shipSelector.addEventListener('change', () => {
             selectedContractorId = null; 
+            if (shipSelector.value) {
+                localStorage.setItem('fleet_last_ship_id', shipSelector.value);
+            } else {
+                localStorage.removeItem('fleet_last_ship_id');
+            }
             setupDashboardListeners();
         });
 
